@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refunds timestamp="839293829">
+	<refund id="1111">
+		<transaction type="aaaa">90203902-382929-839292</transaction>
+		<amount>90023.233</amount>
+		<comment>   Some comment</comment>
+	</refund>
+	<refund id="2222">
+		<transaction type="zzzz">902-382929-8392929302</transaction>
+		<amount>77777.233</amount>
+		<comment>Other demo comment</comment>
+	</refund>
+	<refund id="3333">
+		<transaction type="jjjj">902-3829298392-929302</transaction>
+		<amount>77328.333</amount>
+		<comment>Third demo comment</comment>
+	</refund>
+	<zfa>0320889-189382378277183728723</zfa>
+	<quux>03829839237322</quux>
+</refunds>
