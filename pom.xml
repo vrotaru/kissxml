@@ -4,4 +4,11 @@
   <artifactId>kissxml</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>KissXml</name>
+  <dependencies>
+  	<dependency>
+  		<groupId>org.easymock</groupId>
+  		<artifactId>easymock</artifactId>
+  		<version>3.1</version>
+  	</dependency>
+  </dependencies>
 </project>

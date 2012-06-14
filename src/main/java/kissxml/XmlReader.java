@@ -32,7 +32,11 @@ public class XmlReader {
 				switch (event) {
 				case XMLEvent.START_ELEMENT:
 					String tag = reader.getLocalName();
-					String xpath = createExtendedPath("", tag, 1);
+
+					// Would be always one for well formed XML documents,
+					// so here it is called mostly for its side effects
+					int innerCount = getInnerCount("", tag);					
+					String xpath = createExtendedPath("", tag, innerCount);
 					
 					readAttirbutes(xpath, reader);
 					readInnerElements(xpath, reader);
@@ -67,7 +71,13 @@ public class XmlReader {
 	}
 	
 	public PrefixView createPrefixView(String prefix) {
-		return new PrefixView(this, prefix);
+		String value = get(prefix);
+		if (MARKER.equals(value)) {
+			return new PrefixView(this, prefix);			
+		}
+		else { 
+			throw new XmlReaderException("Not a valid prefix");
+		}
 	}
 
 	/*
@@ -81,7 +91,8 @@ public class XmlReader {
 	}
 
 	protected void readAttirbutes(String path, XMLStreamReader reader) {
-		for (int i = 0; i < reader.getAttributeCount(); i++) {
+		int attributeCount = reader.getAttributeCount();
+		for (int i = 0; i < attributeCount; i++) {
 			String attributeName = reader.getAttributeName(i).getLocalPart();
 			String value = reader.getAttributeValue(i);
 
@@ -124,7 +135,7 @@ public class XmlReader {
 		}
 	}
 
-	protected String createExtendedPath(String path, String tag, int count) {
+	private String createExtendedPath(String path, String tag, int count) {
 		if (path == null ) {
 			throw new IllegalArgumentException("The path argument cannot be null");
 		}
