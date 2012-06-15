@@ -22,18 +22,25 @@ public class XmlBuilder implements ElementBuilder {
 		xmlWriter.writeStartElement(name);
 	}
 
-	public void attribute(String attrName, Object attrValue) throws XMLStreamException {
+	public void attr(String name, Object value) throws XMLStreamException {
 		backToDaddy();
 
-		xmlWriter.writeAttribute(attrName, attrValue != null ? attrValue.toString() : "");
+		xmlWriter.writeAttribute(name, value != null ? value.toString() : "");
 	}
 
-	public void data(String dataName, Object dataValue) throws XMLStreamException {
+	public void value(String name, Object value) throws XMLStreamException {
 		backToDaddy();
 
-		xmlWriter.writeStartElement(dataName);
-		xmlWriter.writeCharacters(dataValue != null ? dataValue.toString() : "");
+		xmlWriter.writeStartElement(name);
+		if (value != null) {
+			xmlWriter.writeCharacters(value.toString());
+		}
 		xmlWriter.writeEndElement();
+	}
+
+	@Override
+	public void content(String text) throws XMLStreamException {
+		xmlWriter.writeCharacters(text);
 	}
 
 	public ElementBuilder element(String name) throws XMLStreamException {
@@ -82,18 +89,25 @@ public class XmlBuilder implements ElementBuilder {
 		}
 
 		@Override
-		public void attribute(String attrName, Object attrValue) throws XMLStreamException {
+		public void attr(String name, Object value) throws XMLStreamException {
 			backToDaddy();
-			innerXmllWriter.writeAttribute(attrName, attrValue != null ? attrValue.toString() : "");
+			innerXmllWriter.writeAttribute(name, value != null ? value.toString() : "");
 		}
 
 		@Override
-		public void data(String dataName, Object dataValue) throws XMLStreamException {
+		public void value(String name, Object value) throws XMLStreamException {
 			backToDaddy();
 
-			innerXmllWriter.writeStartElement(dataName);
-			innerXmllWriter.writeCharacters(dataValue != null ? dataValue.toString() : "");
+			innerXmllWriter.writeStartElement(name);
+			if (value != null) {
+				innerXmllWriter.writeCharacters(value.toString());
+			}
 			innerXmllWriter.writeEndElement();
+		}
+
+		@Override
+		public void content(String text) throws XMLStreamException {
+			innerXmllWriter.writeCharacters(text);
 		}
 
 		@Override
