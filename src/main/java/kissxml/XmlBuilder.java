@@ -1,94 +1,122 @@
 package kissxml;
 
-public class XmlBuilder {
+import java.io.IOException;
+import java.io.OutputStream;
 
-	public static final String XML_VERSION_1_0_ENCODING_UTF_8 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-	private StringBuilder builder;
-	private String name;
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
-	private boolean innerElements = false;
+public class XmlBuilder implements ElementBuilder {
 
-	/**
-	 * @param name
-	 */
-	public XmlBuilder(String name) {
-		this(name, new StringBuilder());
-	}
-	
-	private XmlBuilder(String name, StringBuilder builder) {
-		this.name = name;
-		this.builder = builder;
-		
-		initialize();
-	}
+	private final XMLStreamWriter xmlWriter;
+	private final OutputStream outputStream;
+	private ElementBuilder active;
 
-	/**
-	 * @param attributeName
-	 * @param attributeValue
-	 * @throws XmlBuilderException
-	 */
-	public void attribute(String attributeName, String attributeValue) throws XmlBuilderException {
-		if (innerElements) {
-			throw new XmlBuilderException("Cannot add attributes when the starting tag is closed");
-		}
-		builder.append(" ").append(attributeName).append("=\"").append(attributeValue).append("\"");
+	public XmlBuilder(String name, OutputStream outputStream) throws XmlBuilderException, XMLStreamException {
+		this.outputStream = outputStream;
+		this.xmlWriter = createXmlWriter(outputStream);
+
+		xmlWriter.writeStartDocument();
+		xmlWriter.writeStartElement(name);
 	}
 
-	/**
-	 * @param elementName
-	 * @param value
-	 */
-	public void value(String elementName, Object value) {
-		if (!innerElements) {
-			innerElements = true;
-			builder.append(">");
-		}
+	public void attribute(String attrName, Object attrValue) throws XMLStreamException {
+		backToDaddy();
 
-		if (value != null) {
-			builder.append("<").append(elementName).append(">").append(value).append("</").append(elementName)
-					.append(">");
-		} else {
-			builder.append("<").append(elementName).append(" />");
-
-		}
+		xmlWriter.writeAttribute(attrName, attrValue != null ? attrValue.toString() : "");
 	}
 
-	/**
-	 * @param elementName
-	 * @return
-	 */
-	public XmlBuilder element(String elementName) {
-		if (!innerElements) {
-			builder.append(">");
-		}
-		innerElements = true;
-		
-		builder.append("<").append(elementName);
+	public void data(String dataName, Object dataValue) throws XMLStreamException {
+		backToDaddy();
 
-		return new XmlBuilder(elementName, builder);
+		xmlWriter.writeStartElement(dataName);
+		xmlWriter.writeCharacters(dataValue != null ? dataValue.toString() : "");
+		xmlWriter.writeEndElement();
 	}
 
-	/**
-	 * 
-	 */
-	public void close() {
-		if (innerElements) {
-			builder.append("</").append(name).append(">");
-		} else {
-			builder.append(" />");
+	public ElementBuilder element(String name) throws XMLStreamException {
+		backToDaddy();
+
+		active = new ElementBuilderImpl(name, xmlWriter);
+		return active;
+	}
+
+	protected void backToDaddy() throws XMLStreamException {
+		// Close all active elements
+		while (active != null) {
+			xmlWriter.writeEndElement();
+
+			ElementBuilderImpl impl = (ElementBuilderImpl) active;
+			active = impl.getActive();
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return builder.toString();
+	public void flush() throws XMLStreamException, IOException {
+		xmlWriter.writeEndDocument();
+		xmlWriter.flush();
+
+		outputStream.flush();
+		outputStream.close();
 	}
 
-	private void initialize() {
-		builder.append(XML_VERSION_1_0_ENCODING_UTF_8).append("<").append(name);
+	protected XMLStreamWriter createXmlWriter(OutputStream outputStream) throws XMLStreamException {
+		try {
+			return XMLOutputFactory.newFactory().createXMLStreamWriter(outputStream);
+		} catch (FactoryConfigurationError e) {
+			throw new XmlBuilderException("Factory configuration error", e);
+		}
+	}
+
+	private static class ElementBuilderImpl implements ElementBuilder {
+
+		private final XMLStreamWriter innerXmllWriter;
+		private ElementBuilder active;
+
+		public ElementBuilderImpl(String name, XMLStreamWriter xmlWriter)
+				throws XMLStreamException {
+			this.innerXmllWriter = xmlWriter;
+
+			innerXmllWriter.writeStartElement(name);
+		}
+
+		@Override
+		public void attribute(String attrName, Object attrValue) throws XMLStreamException {
+			backToDaddy();
+			innerXmllWriter.writeAttribute(attrName, attrValue != null ? attrValue.toString() : "");
+		}
+
+		@Override
+		public void data(String dataName, Object dataValue) throws XMLStreamException {
+			backToDaddy();
+
+			innerXmllWriter.writeStartElement(dataName);
+			innerXmllWriter.writeCharacters(dataValue != null ? dataValue.toString() : "");
+			innerXmllWriter.writeEndElement();
+		}
+
+		@Override
+		public ElementBuilder element(String name) throws XMLStreamException {
+			backToDaddy();
+
+			active = new ElementBuilderImpl(name, innerXmllWriter);
+			return active;
+		}
+
+		protected void backToDaddy() throws XMLStreamException {
+			// Close all active elements
+			while (active != null) {
+				innerXmllWriter.writeEndElement();
+				ElementBuilderImpl impl = (ElementBuilderImpl) active;
+				active = impl.getActive();
+			}
+		}
+
+		public ElementBuilder getActive() {
+			return active;
+		}
+
 	}
 
 }

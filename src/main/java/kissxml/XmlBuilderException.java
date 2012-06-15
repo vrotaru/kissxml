@@ -7,4 +7,9 @@ public class XmlBuilderException extends RuntimeException {
 		super(message);
 	}
 
+	public XmlBuilderException(String message, Throwable cause) {
+		super(message, cause);
+	}
+	
+
 }
