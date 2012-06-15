@@ -8,17 +8,17 @@ import kissxml.XmlReader.PrefixView;
 public class XmlReaderDemo {
 	public void run() throws Exception {
 		InputStream inputStream = getClass().getResourceAsStream("refunds.xml");
-		XmlReader reader = new XmlReader();		
+		XmlReader reader = new XmlReader();
 		reader.read(inputStream);
 
 		String refunds = reader.get("/refunds");
 		String refund = reader.get("/refunds/refund");
-		
+
 		System.out.println("  refunds/refund: " + refunds + "/" + refund);
 		System.out.println();
 
 		int refundCount = reader.count("/refunds/refund");
-		
+
 		System.out.println("         refund#: " + refundCount);
 		System.out.println();
 
@@ -47,7 +47,7 @@ public class XmlReaderDemo {
 		System.out.println("          amount: " + amount);
 		System.out.println("         comment: " + comment);
 		System.out.println();
-		
+
 		// Testing the prefix view
 		PrefixView refund3 = reader.createPrefixView("/refunds/refund,3");
 		System.out.println("       refund.id: " + refund3.get("@id"));
@@ -56,7 +56,6 @@ public class XmlReaderDemo {
 		System.out.println("          amount: " + refund3.get("/amount"));
 		System.out.println("         comment: " + refund3.get("/comment"));
 		System.out.println();
-		
 
 		String zfa = reader.get("/refunds/zfa");
 		String quux = reader.get("/refunds/quux");

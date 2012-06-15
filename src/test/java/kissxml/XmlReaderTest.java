@@ -69,6 +69,9 @@ public class XmlReaderTest {
 	@Test()
 	public void testRead() throws Exception {
 		expect(streamReader.hasNext()).andReturn(true);
+		expect(streamReader.next()).andReturn(XMLEvent.START_DOCUMENT);
+		
+		expect(streamReader.hasNext()).andReturn(true);
 		expect(streamReader.next()).andReturn(XMLEvent.START_ELEMENT);
 		expect(streamReader.getLocalName()).andReturn("baz");
 		
@@ -87,6 +90,19 @@ public class XmlReaderTest {
 		expect(streamReader.hasNext()).andReturn(true);
 		expect(streamReader.next()).andReturn(XMLEvent.CHARACTERS);
 		expect(streamReader.getText()).andReturn("Hello");
+		
+		expect(streamReader.hasNext()).andReturn(true);
+		expect(streamReader.next()).andReturn(XMLEvent.END_ELEMENT);
+		
+		expect(streamReader.hasNext()).andReturn(true);
+		expect(streamReader.next()).andReturn(XMLEvent.START_ELEMENT);
+		expect(streamReader.getLocalName()).andReturn("quux");
+		
+		expect(streamReader.getAttributeCount()).andReturn(0);
+		
+		expect(streamReader.hasNext()).andReturn(true);
+		expect(streamReader.next()).andReturn(XMLEvent.CHARACTERS);
+		expect(streamReader.getText()).andReturn("World");
 		
 		expect(streamReader.hasNext()).andReturn(true);
 		expect(streamReader.next()).andReturn(XMLEvent.END_ELEMENT);
@@ -126,8 +142,10 @@ public class XmlReaderTest {
 		assertEquals(1, xmlReader.count("/baz"));
 		assertEquals(1, xmlReader.count("/baz,1"));
 		
-		assertEquals(1, xmlReader.count("/baz/quux"));
-		assertEquals(1, xmlReader.count("/baz/quux,1"));
+		assertEquals(2, xmlReader.count("/baz/quux"));
+		assertEquals(2, xmlReader.count("/baz/quux,1"));
+		
+		assertEquals(0, xmlReader.count("/abra/ca/dab/ra,88"));
 	}
 	
 	@Test(expected = XmlReaderException.class)
@@ -152,7 +170,8 @@ public class XmlReaderTest {
 		assertEquals("Captain Debug", prefixView.get("/quux@superhero"));
 		assertEquals("Captain Debug", prefixView.get("/quux,1@superhero"));
 		
-		assertEquals("HeisenBug", prefixView.get("/quux@villain"));		
+		assertEquals("HeisenBug", prefixView.get("/quux@villain"));
+		assertEquals(2, prefixView.count("/quux"));
 	}
 
 	@Test
@@ -204,7 +223,7 @@ public class XmlReaderTest {
 		expect(streamReader.getAttributeCount()).andReturn(0);
 
 		expect(streamReader.hasNext()).andReturn(true);
-		expect(streamReader.next()).andReturn(XMLEvent.CHARACTERS);
+		expect(streamReader.next()).andReturn(XMLEvent.CDATA);
 		expect(streamReader.getText()).andReturn("elem2");		
 		
 		expect(streamReader.hasNext()).andReturn(true);

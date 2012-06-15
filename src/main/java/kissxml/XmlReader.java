@@ -133,19 +133,11 @@ public class XmlReader {
 				break;
 			}
 		}
+		// Should never happen
+		throw new XmlReaderException("Mismatched Tag");
 	}
 
-	private String createExtendedPath(String path, String tag, int count) {
-		if (path == null ) {
-			throw new IllegalArgumentException("The path argument cannot be null");
-		}
-		if (tag == null || tag.length() == 0) {
-			throw new IllegalArgumentException("The tag argument cannot be null or empty");
-		}
-		if (count < 1) {
-			throw new IllegalArgumentException("The count argument cannot be less than 1");
-		}
-		
+	private String createExtendedPath(String path, String tag, int count) {		
 		if (count == 1) {
 			return path + "/"  + tag;
 		}
@@ -196,7 +188,7 @@ public class XmlReader {
 		}
 		
 		public int count(String path) {
-			return reader.count(path);
+			return reader.count(prefix + path);
 		}
 	}
 }
