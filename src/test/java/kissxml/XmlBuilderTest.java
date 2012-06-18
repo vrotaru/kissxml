@@ -1,16 +1,13 @@
 package kissxml;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 
-import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
-import org.easymock.EasyMock;
-import org.junit.After;
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -58,7 +55,10 @@ public class XmlBuilderTest {
 		builder.flush();
 
 		String output = outputStream.toString();
-		System.out.println(output);
+		
+		Assert.assertTrue(output.contains("<bunny wow=\"999\"></bunny>"));
+		Assert.assertTrue(output.contains("<kitty><mimi>Me</mimi></kitty>"));
+		Assert.assertTrue(output.contains("<AAAA><x>999</x><y>-500</y><z>300</z></AAAA>"));
 	}
 	
 	@Test(expected = XMLStreamException.class)
